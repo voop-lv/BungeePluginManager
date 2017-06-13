@@ -27,8 +27,10 @@ public class PluginUtils {
 
     @SuppressWarnings("deprecation")
     public static void unloadPlugin(Plugin plugin) {
+
         PluginManager pluginmanager = ProxyServer.getInstance().getPluginManager();
         ClassLoader pluginclassloader = plugin.getClass().getClassLoader();
+
         try {
             //call onDisable
             plugin.onDisable();
@@ -39,6 +41,7 @@ public class PluginUtils {
         } catch (Throwable t) {
             severe("Exception disabling plugin", t, plugin.getDescription().getName());
         }
+
         //unregister event handlers
         pluginmanager.unregisterListeners(plugin);
         //unregister commands
@@ -48,19 +51,20 @@ public class PluginUtils {
         //shutdown internal executor
         plugin.getExecutorService().shutdownNow();
         //stop all still active threads that belong to a plugin
-        for (Thread thread : Thread.getAllStackTraces().keySet()) {
-            if (thread.getClass().getClassLoader() == pluginclassloader) {
-                try {
-                    thread.interrupt();
-                    thread.join(2000);
-                    if (thread.isAlive()) {
-                        thread.stop();
+        Thread.getAllStackTraces().keySet().stream()
+                .filter(thread -> (thread.getClass().getClassLoader() == pluginclassloader))
+                .forEach(thread -> {
+                    try {
+                        thread.interrupt();
+                        thread.join(2000);
+                        if (thread.isAlive()) {
+                            thread.stop();
+                        }
+                    } catch (Throwable t) {
+                        severe("Failed to stop thread that belong to plugin", t, plugin.getDescription().getName());
                     }
-                } catch (Throwable t) {
-                    severe("Failed to stop thread that belong to plugin", t, plugin.getDescription().getName());
-                }
-            }
-        }
+                });
+
         //finish uncompleted intents
         ModifiedPluginEventBus.completeIntents(plugin);
         //remove commands that were registered by plugin not through normal means
@@ -98,24 +102,27 @@ public class PluginUtils {
         //remove classloader
         Set<PluginClassloader> allLoaders = ReflectionUtils.getStaticFieldValue(PluginClassloader.class, "allLoaders");
         allLoaders.remove(pluginclassloader);
+
     }
 
     @SuppressWarnings("resource")
     public static boolean loadPlugin(File pluginfile) {
+
         try (JarFile jar = new JarFile(pluginfile)) {
+
             JarEntry pdf = jar.getJarEntry("bungee.yml");
+
             if (pdf == null) {
                 pdf = jar.getJarEntry("plugin.yml");
             }
+
             try (InputStream in = jar.getInputStream(pdf)) {
                 //load description
                 PluginDescription desc = new Yaml().loadAs(in, PluginDescription.class);
                 desc.setFile(pluginfile);
                 //check depends
-                HashSet<String> plugins = new HashSet<String>();
-                for (Plugin plugin : ProxyServer.getInstance().getPluginManager().getPlugins()) {
-                    plugins.add(plugin.getDescription().getName());
-                }
+                HashSet<String> plugins = new HashSet<>();
+                ProxyServer.getInstance().getPluginManager().getPlugins().stream().forEach(plugin -> plugins.add(plugin.getDescription().getName()));
                 for (String dependency : desc.getDepends()) {
                     if (!plugins.contains(dependency)) {
                         ProxyServer.getInstance().getLogger().log(Level.WARNING, "{0} (required by {1}) is unavailable", new Object[]{dependency, desc.getName()});
@@ -137,6 +144,7 @@ public class PluginUtils {
             severe("Failed to load plugin", t, pluginfile.getName());
             return false;
         }
+
     }
 
     static void severe(String message, Throwable t, String pluginname) {
