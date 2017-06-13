@@ -1,4 +1,4 @@
-package bungeepluginmanager;
+package br.com.azalim.bungeepluginmanager;
 
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;

@@ -1,4 +1,4 @@
-package bungeepluginmanager;
+package br.com.azalim.bungeepluginmanager;
 
 import java.io.File;
 import java.io.InputStream;

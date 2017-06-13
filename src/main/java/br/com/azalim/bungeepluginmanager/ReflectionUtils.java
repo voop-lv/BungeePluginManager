@@ -1,4 +1,4 @@
-package bungeepluginmanager;
+package br.com.azalim.bungeepluginmanager;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
