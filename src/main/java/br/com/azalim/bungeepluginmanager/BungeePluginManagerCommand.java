@@ -94,13 +94,10 @@ public final class BungeePluginManagerCommand extends Command {
         }
     }
 
-    static Plugin findPlugin(String pluginname) {
-        for (Plugin plugin : ProxyServer.getInstance().getPluginManager().getPlugins()) {
-            if (plugin.getDescription().getName().equalsIgnoreCase(pluginname)) {
-                return plugin;
-            }
-        }
-        return null;
+    static Plugin findPlugin(String pluginName) {
+        return ProxyServer.getInstance().getPluginManager().getPlugins().stream()
+                .filter(plugin -> plugin.getDescription().getName().equalsIgnoreCase(pluginName))
+                .findFirst().orElse(null);
     }
 
     static File findFile(String pluginname) {
@@ -122,7 +119,9 @@ public final class BungeePluginManagerCommand extends Command {
                     }
 
                     try (InputStream in = jar.getInputStream(configurationFile)) {
+
                         final PluginDescription desc = new Yaml().loadAs(in, PluginDescription.class);
+
                         if (desc.getName().equalsIgnoreCase(pluginname)) {
                             return file;
                         }
