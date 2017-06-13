@@ -23,7 +23,7 @@ import net.md_5.bungee.api.plugin.PluginDescription;
 import net.md_5.bungee.api.plugin.PluginManager;
 import org.yaml.snakeyaml.Yaml;
 
-public class PluginUtils {
+public final class PluginUtils {
 
     @SuppressWarnings("deprecation")
     public static void unloadPlugin(Plugin plugin) {

@@ -13,7 +13,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
 import org.yaml.snakeyaml.Yaml;
 
-public class BungeePluginManagerCommand extends Command {
+public final class BungeePluginManagerCommand extends Command {
 
     public BungeePluginManagerCommand() {
         super("bungeepluginmanager", "bungeepluginmanager.cmds", "bpm");

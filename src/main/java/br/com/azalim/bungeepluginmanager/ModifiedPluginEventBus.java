@@ -7,7 +7,7 @@ import net.md_5.bungee.api.event.AsyncEvent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventBus;
 
-public class ModifiedPluginEventBus extends EventBus {
+public final class ModifiedPluginEventBus extends EventBus {
 
     private static final Set<AsyncEvent<?>> UNCOMPLETED_EVENTS = Collections.newSetFromMap(new WeakHashMap<AsyncEvent<?>, Boolean>());
     private static final Object LOCK = new Object();
