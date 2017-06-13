@@ -1,4 +1,4 @@
 name: BungeePluginManager
-main: bungeepluginmanager.BungeePluginManager
+main: br.com.azalim.bungeepluginmanager.BungeePluginManager
 version: 1.0
 author: _Shevchik_
