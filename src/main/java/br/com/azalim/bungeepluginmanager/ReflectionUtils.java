@@ -1,6 +1,7 @@
 package br.com.azalim.bungeepluginmanager;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class ReflectionUtils {
@@ -13,7 +14,7 @@ public class ReflectionUtils {
                 Field field = clazz.getDeclaredField(fieldname);
                 field.setAccessible(true);
                 return (T) field.get(obj);
-            } catch (Throwable t) {
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException t) {
             }
         } while ((clazz = clazz.getSuperclass()) != null);
         return null;
@@ -26,7 +27,7 @@ public class ReflectionUtils {
                 Field field = clazz.getDeclaredField(fieldname);
                 field.setAccessible(true);
                 field.set(obj, value);
-            } catch (Throwable t) {
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException t) {
             }
         } while ((clazz = clazz.getSuperclass()) != null);
     }
@@ -38,7 +39,7 @@ public class ReflectionUtils {
                 Field field = clazz.getDeclaredField(fieldname);
                 field.setAccessible(true);
                 return (T) field.get(null);
-            } catch (Throwable t) {
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException t) {
             }
         } while ((clazz = clazz.getSuperclass()) != null);
         return null;
@@ -54,7 +55,7 @@ public class ReflectionUtils {
                         method.invoke(obj, args);
                     }
                 }
-            } catch (Throwable t) {
+            } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException t) {
             }
         } while ((clazz = clazz.getSuperclass()) != null);
     }
