@@ -70,13 +70,7 @@ public final class PluginUtils {
         //remove commands that were registered by plugin not through normal means
         try {
             Map<String, Command> commandMap = ReflectionUtils.getFieldValue(pluginmanager, "commandMap");
-            Iterator<Entry<String, Command>> iterator = commandMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Entry<String, Command> entry = iterator.next();
-                if (entry.getValue().getClass().getClassLoader() == pluginclassloader) {
-                    iterator.remove();
-                }
-            }
+            commandMap.entrySet().removeIf(entry -> entry.getValue().getClass().getClassLoader() == pluginclassloader);
         } catch (Throwable t) {
             severe("Failed to cleanup commandMap", t, plugin.getDescription().getName());
         }
