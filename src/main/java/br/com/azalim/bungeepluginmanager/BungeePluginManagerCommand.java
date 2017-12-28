@@ -1,17 +1,27 @@
 package br.com.azalim.bungeepluginmanager;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
+
 import org.yaml.snakeyaml.Yaml;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
+import static net.md_5.bungee.api.ChatColor.GREEN;
+import static net.md_5.bungee.api.ChatColor.RED;
+import static net.md_5.bungee.api.ChatColor.WHITE;
+import static net.md_5.bungee.api.ChatColor.YELLOW;
+import static net.md_5.bungee.api.ChatColor.translateAlternateColorCodes;
 
 public final class BungeePluginManagerCommand extends Command {
 
@@ -22,24 +32,25 @@ public final class BungeePluginManagerCommand extends Command {
     @Override
     public void execute(CommandSender sender, String[] args) {
 
-        if (args.length < 2) {
-            sender.sendMessage(textWithColor("Usage: /bpm <unload;load;reload> <plugin-name>.", ChatColor.RED));
+        if (args.length < 1) {
+            sendHelp(sender);
             return;
         }
 
         switch (args[0].toLowerCase()) {
+            case "help": sendHelp(sender);
 
             case "unload": {
 
                 Plugin plugin = findPlugin(args[1]);
 
                 if (plugin == null) {
-                    sender.sendMessage(textWithColor(String.format("Plugin '%s' not found.", args[1]), ChatColor.RED));
+                    sender.sendMessage(textWithColor(String.format("Plugin '%s' not found.", args[1]), RED));
                     return;
                 }
 
                 PluginUtils.unloadPlugin(plugin);
-                sender.sendMessage(textWithColor(String.format("Plugin '%s' unloaded.", plugin.getDescription().getName()), ChatColor.YELLOW));
+                sender.sendMessage(textWithColor(String.format("Plugin '%s' unloaded.", plugin.getDescription().getName()), YELLOW));
                 break;
             }
 
@@ -48,23 +59,23 @@ public final class BungeePluginManagerCommand extends Command {
                 Plugin plugin = findPlugin(args[1]);
 
                 if (plugin != null) {
-                    sender.sendMessage(textWithColor("Plugin is already loaded", ChatColor.RED));
+                    sender.sendMessage(textWithColor("Plugin is already loaded", RED));
                     return;
                 }
 
                 File file = findFile(args[1]);
 
                 if (!file.exists()) {
-                    sender.sendMessage(textWithColor(String.format("Plugin '%s' not found.", args[1]), ChatColor.RED));
+                    sender.sendMessage(textWithColor(String.format("Plugin '%s' not found.", args[1]), RED));
                     return;
                 }
 
                 boolean success = PluginUtils.loadPlugin(file);
 
                 if (success) {
-                    sender.sendMessage(textWithColor("Plugin loaded.", ChatColor.YELLOW));
+                    sender.sendMessage(textWithColor("Plugin loaded.", YELLOW));
                 } else {
-                    sender.sendMessage(textWithColor("Failed to load plugin, see console for more informations.", ChatColor.RED));
+                    sender.sendMessage(textWithColor("Failed to load plugin, see console for more informations.", RED));
                 }
 
                 break;
@@ -75,7 +86,7 @@ public final class BungeePluginManagerCommand extends Command {
                 Plugin plugin = findPlugin(args[1]);
 
                 if (plugin == null) {
-                    sender.sendMessage(textWithColor(String.format("Plugin '%s' not found.", args[1]), ChatColor.RED));
+                    sender.sendMessage(textWithColor(String.format("Plugin '%s' not found.", args[1]), RED));
                     return;
                 }
 
@@ -85,11 +96,25 @@ public final class BungeePluginManagerCommand extends Command {
                 boolean success = PluginUtils.loadPlugin(pluginfile);
 
                 if (success) {
-                    sender.sendMessage(textWithColor("Plugin reloaded.", ChatColor.YELLOW));
+                    sender.sendMessage(textWithColor("Plugin reloaded.", YELLOW));
                 } else {
-                    sender.sendMessage(textWithColor("Failed to reload plugin, see console for more informations.", ChatColor.RED));
+                    sender.sendMessage(textWithColor("Failed to reload plugin, see console for more informations.", RED));
                 }
+                break;
 
+            }
+            case "list": {
+                Collection<Plugin> plugins = ProxyServer.getInstance().getPluginManager().getPlugins();
+
+                ComponentBuilder builder = new ComponentBuilder("Plugins[" + plugins.size() + "]: ");
+                plugins.forEach(plugin -> builder.append(plugin.getDescription().getName()).color(GREEN).append(",").color(WHITE));
+
+                sender.sendMessage(builder.create());
+                break;
+
+            }
+            default: {
+                sender.sendMessage(textWithColor("Command not found. Type /bpm help to see available commands.", RED));
             }
         }
     }
@@ -140,6 +165,16 @@ public final class BungeePluginManagerCommand extends Command {
         TextComponent text = new TextComponent(message);
         text.setColor(color);
         return text;
+    }
+    static void sendHelp(CommandSender sender) {
+        sender.sendMessage(translateAlternateColorCodes('&',"&6&l---- BungeePluginManager ----"));
+        sender.sendMessage(translateAlternateColorCodes('&',""));
+        sender.sendMessage(translateAlternateColorCodes('&',"&6/bpm help: &fDisplay this message"));
+        sender.sendMessage(translateAlternateColorCodes('&',"&6/bpm load &a<plugin>: &fLoads a plugin"));
+        sender.sendMessage(translateAlternateColorCodes('&',"&6/bpm unload &a<plugin>: &fUnloads a plugin"));
+        sender.sendMessage(translateAlternateColorCodes('&',"&6/bpm reload &a<plugin>: &fReloads a plugin"));
+        sender.sendMessage(translateAlternateColorCodes('&',"&6/bpm list: &fList all plugins on the bungee"));
+
     }
 
 }
