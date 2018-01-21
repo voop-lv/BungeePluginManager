@@ -37,6 +37,6 @@ jobs:
 
 
       - store_artifacts:
-          path: target/*.jar
-          destination: glowstone.jar
+          path: target/BungeePluginManager.jar
+          destination: BungeePluginManager.jar
 
