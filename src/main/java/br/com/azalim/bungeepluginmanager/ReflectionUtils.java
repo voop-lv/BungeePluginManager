@@ -14,7 +14,7 @@ public final class ReflectionUtils {
                 Field field = clazz.getDeclaredField(fieldname);
                 field.setAccessible(true);
                 return (T) field.get(obj);
-            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException t) {
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ignored) {
             }
         } while ((clazz = clazz.getSuperclass()) != null);
         return null;
@@ -27,7 +27,7 @@ public final class ReflectionUtils {
                 Field field = clazz.getDeclaredField(fieldname);
                 field.setAccessible(true);
                 field.set(obj, value);
-            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException t) {
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ignored) {
             }
         } while ((clazz = clazz.getSuperclass()) != null);
     }
@@ -39,7 +39,7 @@ public final class ReflectionUtils {
                 Field field = clazz.getDeclaredField(fieldname);
                 field.setAccessible(true);
                 return (T) field.get(null);
-            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException t) {
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ignored) {
             }
         } while ((clazz = clazz.getSuperclass()) != null);
         return null;
@@ -55,7 +55,7 @@ public final class ReflectionUtils {
                         method.invoke(obj, args);
                     }
                 }
-            } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException t) {
+            } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ignored) {
             }
         } while ((clazz = clazz.getSuperclass()) != null);
     }

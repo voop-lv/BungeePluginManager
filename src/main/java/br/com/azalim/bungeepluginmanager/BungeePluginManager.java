@@ -7,7 +7,7 @@ public final class BungeePluginManager extends Plugin {
 
     @Override
     public void onEnable() {
-        ProxyServer.getInstance().getPluginManager().registerCommand(this, new BungeePluginManagerCommand());
+        getProxy().getPluginManager().registerCommand(this, new BungeePluginManagerCommand());
         ReflectionUtils.setFieldValue(ProxyServer.getInstance().getPluginManager(), "eventBus", new ModifiedPluginEventBus());
     }
 

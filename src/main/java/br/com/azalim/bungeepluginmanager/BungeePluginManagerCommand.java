@@ -132,29 +132,31 @@ public final class BungeePluginManagerCommand extends Command {
         if (folder.exists()) {
 
             File[] pluginFiles = folder.listFiles((File file) -> file.isFile() && file.getName().endsWith(".jar"));
+            if (pluginFiles != null) {
+                for (File file : pluginFiles) {
 
-            for (File file : pluginFiles) {
+                    try (JarFile jar = new JarFile(file)) {
 
-                try (JarFile jar = new JarFile(file)) {
+                        JarEntry configurationFile = jar.getJarEntry("bungee.yml");
 
-                    JarEntry configurationFile = jar.getJarEntry("bungee.yml");
-
-                    if (configurationFile == null) {
-                        configurationFile = jar.getJarEntry("plugin.yml");
-                    }
-
-                    try (InputStream in = jar.getInputStream(configurationFile)) {
-
-                        final PluginDescription desc = new Yaml().loadAs(in, PluginDescription.class);
-
-                        if (desc.getName().equalsIgnoreCase(pluginname)) {
-                            return file;
+                        if (configurationFile == null) {
+                            configurationFile = jar.getJarEntry("plugin.yml");
                         }
+
+                        try (InputStream in = jar.getInputStream(configurationFile)) {
+
+                            final PluginDescription desc = new Yaml().loadAs(in, PluginDescription.class);
+
+                            if (desc.getName().equalsIgnoreCase(pluginname)) {
+                                return file;
+                            }
+                        }
+
+                    } catch (Throwable ignored) {
                     }
 
-                } catch (Throwable ex) {
-                }
 
+                }
             }
         }
 
@@ -167,6 +169,7 @@ public final class BungeePluginManagerCommand extends Command {
         return text;
     }
     static void sendHelp(CommandSender sender) {
+        // TODO: Use Chat Component API
         sender.sendMessage(translateAlternateColorCodes('&',"&6&l---- BungeePluginManager ----"));
         sender.sendMessage(translateAlternateColorCodes('&',""));
         sender.sendMessage(translateAlternateColorCodes('&',"&6/bpm help: &fDisplay this message"));
