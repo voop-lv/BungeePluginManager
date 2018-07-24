@@ -1,4 +1,4 @@
-package br.com.azalim.bungeepluginmanager;
+package bungeepluginmanager;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

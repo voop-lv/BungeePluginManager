@@ -1,4 +1,4 @@
-package br.com.azalim.bungeepluginmanager;
+package bungeepluginmanager;
 
 import java.util.Collections;
 import java.util.Set;

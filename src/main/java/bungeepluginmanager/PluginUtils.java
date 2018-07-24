@@ -1,4 +1,4 @@
-package br.com.azalim.bungeepluginmanager;
+package bungeepluginmanager;
 
 import com.google.common.collect.Multimap;
 import java.io.File;

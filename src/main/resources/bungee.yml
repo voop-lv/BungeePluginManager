@@ -1,4 +1,4 @@
 name: ${project.name}
-main: br.com.azalim.bungeepluginmanager.BungeePluginManager
+main: bungeepluginmanager.BungeePluginManager
 version: ${project.version}
 author: _Shevchik_, Azalim, VaiTon86
