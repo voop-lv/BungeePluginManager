@@ -25,7 +25,7 @@ import static net.md_5.bungee.api.ChatColor.translateAlternateColorCodes;
 
 public final class BungeePluginManagerCommand extends Command {
 
-    public BungeePluginManagerCommand() {
+    BungeePluginManagerCommand() {
         super("bungeepluginmanager", "bungeepluginmanager.cmds", "bpm");
     }
 

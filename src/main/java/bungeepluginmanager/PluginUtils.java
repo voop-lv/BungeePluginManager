@@ -26,8 +26,8 @@ public final class PluginUtils {
     @SuppressWarnings("deprecation")
     public static void unloadPlugin(Plugin plugin) {
 
-        PluginManager pluginmanager = ProxyServer.getInstance().getPluginManager();
-        ClassLoader pluginclassloader = plugin.getClass().getClassLoader();
+        PluginManager pluginManager = ProxyServer.getInstance().getPluginManager();
+        ClassLoader pluginClassLoader = plugin.getClass().getClassLoader();
 
         try {
             //call onDisable
@@ -41,16 +41,16 @@ public final class PluginUtils {
         }
 
         //unregister event handlers
-        pluginmanager.unregisterListeners(plugin);
+        pluginManager.unregisterListeners(plugin);
         //unregister commands
-        pluginmanager.unregisterCommands(plugin);
+        pluginManager.unregisterCommands(plugin);
         //cancel tasks
         ProxyServer.getInstance().getScheduler().cancel(plugin);
         //shutdown internal executor
         plugin.getExecutorService().shutdownNow();
         //stop all still active threads that belong to a plugin
         Thread.getAllStackTraces().keySet().stream()
-                .filter(thread -> (thread.getClass().getClassLoader() == pluginclassloader))
+                .filter(thread -> (thread.getClass().getClassLoader() == pluginClassLoader))
                 .forEach(thread -> {
                     try {
                         thread.interrupt();
@@ -67,33 +67,33 @@ public final class PluginUtils {
         ModifiedPluginEventBus.completeIntents(plugin);
         //remove commands that were registered by plugin not through normal means
         try {
-            Map<String, Command> commandMap = ReflectionUtils.getFieldValue(pluginmanager, "commandMap");
-            commandMap.entrySet().removeIf(entry -> entry.getValue().getClass().getClassLoader() == pluginclassloader);
+            Map<String, Command> commandMap = ReflectionUtils.getFieldValue(pluginManager, "commandMap");
+            commandMap.entrySet().removeIf(entry -> entry.getValue().getClass().getClassLoader() == pluginClassLoader);
         } catch (Throwable t) {
             severe("Failed to cleanup commandMap", t, plugin.getDescription().getName());
         }
         //cleanup internal listener and command maps from plugin refs
         try {
-            Map<String, Plugin> pluginsMap = ReflectionUtils.getFieldValue(pluginmanager, "plugins");
+            Map<String, Plugin> pluginsMap = ReflectionUtils.getFieldValue(pluginManager, "plugins");
             pluginsMap.values().remove(plugin);
-            Multimap<Plugin, Command> commands = ReflectionUtils.getFieldValue(pluginmanager, "commandsByPlugin");
+            Multimap<Plugin, Command> commands = ReflectionUtils.getFieldValue(pluginManager, "commandsByPlugin");
             commands.removeAll(plugin);
-            Multimap<Plugin, Listener> listeners = ReflectionUtils.getFieldValue(pluginmanager, "listenersByPlugin");
+            Multimap<Plugin, Listener> listeners = ReflectionUtils.getFieldValue(pluginManager, "listenersByPlugin");
             listeners.removeAll(plugin);
         } catch (Throwable t) {
             severe("Failed to cleanup bungee internal maps from plugin refs", t, plugin.getDescription().getName());
         }
         //close classloader
-        if (pluginclassloader instanceof URLClassLoader) {
+        if (pluginClassLoader instanceof URLClassLoader) {
             try {
-                ((URLClassLoader) pluginclassloader).close();
+                ((URLClassLoader) pluginClassLoader).close();
             } catch (Throwable t) {
                 severe("Failed to close the classloader for plugin", t, plugin.getDescription().getName());
             }
         }
         //remove classloader
         Set<PluginClassloader> allLoaders = ReflectionUtils.getStaticFieldValue(PluginClassloader.class, "allLoaders");
-        allLoaders.remove(pluginclassloader);
+        allLoaders.remove(pluginClassLoader);
 
     }
 
@@ -145,7 +145,7 @@ public final class PluginUtils {
 
     }
 
-    static void severe(String message, Throwable t, String pluginname) {
+    private static void severe(String message, Throwable t, String pluginname) {
         ProxyServer.getInstance().getLogger().log(Level.SEVERE, message + " " + pluginname, t);
     }
 

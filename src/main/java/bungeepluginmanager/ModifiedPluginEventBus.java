@@ -12,9 +12,9 @@ public final class ModifiedPluginEventBus extends EventBus {
     private static final Set<AsyncEvent<?>> UNCOMPLETED_EVENTS = Collections.newSetFromMap(new WeakHashMap<>());
     private static final Object LOCK = new Object();
 
-    public static void completeIntents(Plugin plugin) {
+    static void completeIntents(Plugin plugin) {
         synchronized (LOCK) {
-            UNCOMPLETED_EVENTS.stream().forEach(event -> {
+            UNCOMPLETED_EVENTS.forEach(event -> {
                 try {
                     event.completeIntent(plugin);
                 } catch (Throwable ignored) {

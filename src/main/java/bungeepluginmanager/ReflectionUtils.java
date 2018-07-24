@@ -4,10 +4,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public final class ReflectionUtils {
+final class ReflectionUtils {
 
     @SuppressWarnings("unchecked")
-    protected static <T> T getFieldValue(Object obj, String fieldname) {
+    static <T> T getFieldValue(Object obj, String fieldname) {
         Class<?> clazz = obj.getClass();
         do {
             try {
@@ -20,7 +20,7 @@ public final class ReflectionUtils {
         return null;
     }
 
-    protected static void setFieldValue(Object obj, String fieldname, Object value) {
+    static void setFieldValue(Object obj, String fieldname, Object value) {
         Class<?> clazz = obj.getClass();
         do {
             try {
@@ -33,7 +33,7 @@ public final class ReflectionUtils {
     }
 
     @SuppressWarnings("unchecked")
-    protected static <T> T getStaticFieldValue(Class<?> clazz, String fieldname) {
+    static <T> T getStaticFieldValue(Class<?> clazz, String fieldname) {
         do {
             try {
                 Field field = clazz.getDeclaredField(fieldname);
@@ -45,7 +45,7 @@ public final class ReflectionUtils {
         return null;
     }
 
-    protected static void invokeMethod(Object obj, String methodname, Object... args) {
+    static void invokeMethod(Object obj, String methodname, Object... args) {
         Class<?> clazz = obj.getClass();
         do {
             try {
