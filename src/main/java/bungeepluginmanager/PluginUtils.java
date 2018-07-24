@@ -114,22 +114,28 @@ public final class PluginUtils {
                 desc.setFile(pluginfile);
                 //check depends
                 HashSet<String> plugins = new HashSet<>();
-                ProxyServer.getInstance().getPluginManager().getPlugins().stream().forEach(plugin -> plugins.add(plugin.getDescription().getName()));
+                ProxyServer.getInstance().getPluginManager().getPlugins().forEach(plugin -> plugins.add(plugin.getDescription().getName()));
                 for (String dependency : desc.getDepends()) {
                     if (!plugins.contains(dependency)) {
                         ProxyServer.getInstance().getLogger().log(Level.WARNING, "{0} (required by {1}) is unavailable", new Object[]{dependency, desc.getName()});
                         return false;
                     }
                 }
-                //load plugin
-                URLClassLoader loader = new PluginClassloader(new URL[]{pluginfile.toURI().toURL()});
-                Class<?> mainclazz = loader.loadClass(desc.getMain());
-                Plugin plugin = (Plugin) mainclazz.getDeclaredConstructor().newInstance();
-                ReflectionUtils.invokeMethod(plugin, "init", ProxyServer.getInstance(), desc);
+
+                // do actual loading
+                URLClassLoader loader = new PluginClassloader( new URL[] {
+                        pluginfile.toURI().toURL()
+                });
+                Class<?> main = loader.loadClass(desc.getMain());
+                Plugin clazz = (Plugin) main.getDeclaredConstructor().newInstance();
+
+                // reflection
                 Map<String, Plugin> pluginsMap = ReflectionUtils.getFieldValue(ProxyServer.getInstance().getPluginManager(), "plugins");
-                pluginsMap.put(desc.getName(), plugin);
-                plugin.onLoad();
-                plugin.onEnable();
+                ReflectionUtils.invokeMethod(clazz, "init", ProxyServer.getInstance(), desc);
+
+                pluginsMap.put(desc.getName(), clazz);
+                clazz.onLoad();
+                clazz.onEnable();
                 return true;
             }
         } catch (Throwable t) {
