@@ -98,9 +98,9 @@ public final class PluginUtils {
     }
 
     @SuppressWarnings("resource")
-    public static boolean loadPlugin(File pluginfile) {
+    public static boolean loadPlugin(File pluginFile) {
 
-        try (JarFile jar = new JarFile(pluginfile)) {
+        try (JarFile jar = new JarFile(pluginFile)) {
 
             JarEntry pdf = jar.getJarEntry("bungee.yml");
 
@@ -111,7 +111,7 @@ public final class PluginUtils {
             try (InputStream in = jar.getInputStream(pdf)) {
                 //load description
                 PluginDescription desc = new Yaml().loadAs(in, PluginDescription.class);
-                desc.setFile(pluginfile);
+                desc.setFile(pluginFile);
                 //check depends
                 HashSet<String> plugins = new HashSet<>();
                 ProxyServer.getInstance().getPluginManager().getPlugins().forEach(plugin -> plugins.add(plugin.getDescription().getName()));
@@ -124,7 +124,7 @@ public final class PluginUtils {
 
                 // do actual loading
                 URLClassLoader loader = new PluginClassloader( new URL[] {
-                        pluginfile.toURI().toURL()
+                        pluginFile.toURI().toURL()
                 });
                 Class<?> main = loader.loadClass(desc.getMain());
                 Plugin clazz = (Plugin) main.getDeclaredConstructor().newInstance();
@@ -139,14 +139,14 @@ public final class PluginUtils {
                 return true;
             }
         } catch (Throwable t) {
-            severe("Failed to load plugin", t, pluginfile.getName());
+            severe("Failed to load plugin", t, pluginFile.getName());
             return false;
         }
 
     }
 
-    private static void severe(String message, Throwable t, String pluginname) {
-        ProxyServer.getInstance().getLogger().log(Level.SEVERE, message + " " + pluginname, t);
+    private static void severe(String message, Throwable t, String pluginName) {
+        ProxyServer.getInstance().getLogger().log(Level.SEVERE, message + " " + pluginName, t);
     }
 
 }
