@@ -53,6 +53,9 @@ public final class BungeePluginManagerCommand extends Command {
             }
 
             case "load": {
+                if (args.length < 2) {
+                    sender.sendMessage(textWithColor("Usage: /bpm load <plugin>", RED));
+                }
 
                 Plugin plugin = findPlugin(args[1]);
 
@@ -80,6 +83,9 @@ public final class BungeePluginManagerCommand extends Command {
             }
 
             case "reload": {
+                if (args.length < 2) {
+                    sender.sendMessage(textWithColor("Usage: /bpm reload <plugin>", RED));
+                }
 
                 Plugin plugin = findPlugin(args[1]);
 
