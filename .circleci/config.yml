@@ -37,6 +37,5 @@ jobs:
 
 
       - store_artifacts:
-          path: target/BungeePluginManager.jar
-          destination: BungeePluginManager.jar
+          path: target
 
