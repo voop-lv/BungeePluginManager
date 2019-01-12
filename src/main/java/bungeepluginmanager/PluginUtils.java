@@ -67,7 +67,7 @@ public final class PluginUtils {
         //remove commands that were registered by plugin not through normal means
         try {
             Map<String, Command> commandMap = ReflectionUtils.getFieldValue(pluginManager, "commandMap");
-            if (!checkReflectionNotNull(commandMap, "commandMap")) {
+            if (checkReflectionNotNull(commandMap, "commandMap")) {
                 commandMap.entrySet().removeIf(entry -> entry.getValue().getClass().getClassLoader() == pluginClassLoader);
             }
         } catch (Exception t) {
