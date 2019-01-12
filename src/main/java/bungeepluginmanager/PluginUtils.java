@@ -107,7 +107,7 @@ public final class PluginUtils {
 
     private static boolean checkReflectionNotNull(Object obj, String field) {
         if (obj == null) {
-            ProxyServer.getInstance().getLogger().severe("Could not get field" + field + " by reflections: are you using the latest version of BungeePluginManager?");
+            ProxyServer.getInstance().getLogger().log(Level.SEVERE, "Could not get field {} by reflections: are you using the latest version of BungeePluginManager?", field);
             return false;
         }
         return true;
