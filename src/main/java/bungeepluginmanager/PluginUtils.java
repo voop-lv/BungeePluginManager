@@ -1,6 +1,10 @@
 package bungeepluginmanager;
 
 import com.google.common.collect.Multimap;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.plugin.*;
+import org.yaml.snakeyaml.Yaml;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
@@ -12,14 +16,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.plugin.PluginClassloader;
-import net.md_5.bungee.api.plugin.PluginDescription;
-import net.md_5.bungee.api.plugin.PluginManager;
-import org.yaml.snakeyaml.Yaml;
 
 public final class PluginUtils {
     private PluginUtils() {
@@ -59,7 +55,7 @@ public final class PluginUtils {
                         thread.interrupt();
                         thread.join(2000);
                         if (thread.isAlive()) {
-                            thread.stop();
+                            throw new IllegalStateException("Thread " + thread.getName() + " still running");
                         }
                     } catch (Exception t) {
                         severe("Failed to stop thread that belong to plugin", t, plugin.getDescription().getName());
@@ -71,18 +67,25 @@ public final class PluginUtils {
         //remove commands that were registered by plugin not through normal means
         try {
             Map<String, Command> commandMap = ReflectionUtils.getFieldValue(pluginManager, "commandMap");
-            commandMap.entrySet().removeIf(entry -> entry.getValue().getClass().getClassLoader() == pluginClassLoader);
+            if (!checkReflectionNotNull(commandMap, "commandMap")) {
+                commandMap.entrySet().removeIf(entry -> entry.getValue().getClass().getClassLoader() == pluginClassLoader);
+            }
         } catch (Exception t) {
             severe("Failed to cleanup commandMap", t, plugin.getDescription().getName());
         }
         //cleanup internal listener and command maps from plugin refs
         try {
             Map<String, Plugin> pluginsMap = ReflectionUtils.getFieldValue(pluginManager, "plugins");
-            pluginsMap.values().remove(plugin);
             Multimap<Plugin, Command> commands = ReflectionUtils.getFieldValue(pluginManager, "commandsByPlugin");
-            commands.removeAll(plugin);
             Multimap<Plugin, Listener> listeners = ReflectionUtils.getFieldValue(pluginManager, "listenersByPlugin");
-            listeners.removeAll(plugin);
+
+            if (checkReflectionNotNull(pluginsMap, "plugin")
+                    && checkReflectionNotNull(commands, "commandByPlugin")
+                    && checkReflectionNotNull(listeners, "listenersByPlugin")) {
+                pluginsMap.values().remove(plugin);
+                commands.removeAll(plugin);
+                listeners.removeAll(plugin);
+            }
         } catch (Exception t) {
             severe("Failed to cleanup bungee internal maps from plugin refs", t, plugin.getDescription().getName());
         }
@@ -96,8 +99,18 @@ public final class PluginUtils {
         }
         //remove classloader
         Set<PluginClassloader> allLoaders = ReflectionUtils.getStaticFieldValue(PluginClassloader.class, "allLoaders");
-        allLoaders.remove(pluginClassLoader);
+        if (checkReflectionNotNull(allLoaders, "allLoaders")) {
+            allLoaders.remove(pluginClassLoader);
+        }
 
+    }
+
+    private static boolean checkReflectionNotNull(Object obj, String field) {
+        if (obj == null) {
+            ProxyServer.getInstance().getLogger().severe("Could not get field" + field + " by reflections: are you using the latest version of BungeePluginManager?");
+            return false;
+        }
+        return true;
     }
 
     @SuppressWarnings("resource")

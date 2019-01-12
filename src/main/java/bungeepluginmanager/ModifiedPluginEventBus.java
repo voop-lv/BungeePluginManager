@@ -1,11 +1,12 @@
 package bungeepluginmanager;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
 import net.md_5.bungee.api.event.AsyncEvent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventBus;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 public final class ModifiedPluginEventBus extends EventBus {
 
@@ -17,7 +18,8 @@ public final class ModifiedPluginEventBus extends EventBus {
             UNCOMPLETED_EVENTS.forEach(event -> {
                 try {
                     event.completeIntent(plugin);
-                } catch (Exception ignored) {
+                } catch (Exception error) {
+                    // Ignored
                 }
             });
         }

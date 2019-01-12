@@ -35,64 +35,92 @@ public final class BungeePluginManagerCommand extends Command {
             return;
         }
         final String cmd = args[0].toLowerCase();
-        if ("help".equals(cmd) || "h".equals(cmd)) {
-            sendHelp(sender);
-        } else if ("unload".equals(cmd) || "ul".equals(cmd)) {
-            if (args.length < 2) {
-                sender.sendMessage(textWithColor("Usage: /bpm unload <plugin>", RED));
-            }
-            Plugin plugin = findPlugin(args[1]);
-            if (plugin == null) {
-                sender.sendMessage(textWithColor(format("Plugin '%s' not found.", args[1]), RED));
-                return;
-            }
-            PluginUtils.unloadPlugin(plugin);
-            sender.sendMessage(textWithColor(format("Plugin '%s' unloaded.", plugin.getDescription().getName()), YELLOW));
-        } else if ("load".equals(cmd) || "l".equals(cmd)) {
-            if (args.length < 2) {
-                sender.sendMessage(textWithColor("Usage: /bpm load <plugin>", RED));
-            }
-            Plugin plugin = findPlugin(args[1]);
-            if (plugin != null) {
-                sender.sendMessage(textWithColor("Plugin is already loaded", RED));
-                return;
-            }
-            File file = findFile(args[1]);
-            if (!file.exists()) {
-                sender.sendMessage(textWithColor(format("Plugin '%s' not found.", args[1]), RED));
-                return;
-            }
-            boolean success = PluginUtils.loadPlugin(file);
-            if (success) {
-                sender.sendMessage(textWithColor("Plugin loaded.", YELLOW));
-            } else {
-                sender.sendMessage(textWithColor("Failed to load plugin, see console for more details.", RED));
-            }
-        } else if ("reload".equals(cmd) || "r".equals(cmd)) {
-            if (args.length < 2) {
-                sender.sendMessage(textWithColor("Usage: /bpm reload <plugin>", RED));
-            }
-            Plugin plugin = findPlugin(args[1]);
-            if (plugin == null) {
-                sender.sendMessage(textWithColor(format("Plugin '%s' not found.", args[1]), RED));
-                return;
-            }
-            File pluginFile = plugin.getFile();
-            PluginUtils.unloadPlugin(plugin);
-            boolean success = PluginUtils.loadPlugin(pluginFile);
-            if (success) {
-                sender.sendMessage(textWithColor("Plugin reloaded.", YELLOW));
-            } else {
-                sender.sendMessage(textWithColor("Failed to reload plugin, see console for more details.", RED));
-            }
-        } else if ("list".equals(cmd) || "ls".equals(cmd)) {
-            Collection<Plugin> plugins = ProxyServer.getInstance().getPluginManager().getPlugins();
-            ComponentBuilder builder = new ComponentBuilder("Plugins[" + plugins.size() + "]: ");
-            plugins.forEach(plugin -> builder.append(plugin.getDescription().getName()).color(GREEN).append(",").color(WHITE));
-            sender.sendMessage(builder.create());
-        } else {
-            sender.sendMessage(textWithColor("Command not found. Type /bpm help to see available commands.", RED));
+        switch (cmd) {
+            case "help":
+            case "h":
+                sendHelp(sender);
+                break;
+            case "unload":
+            case "ul":
+                if (args.length < 2) {
+                    sender.sendMessage(textWithColor("Usage: /bpm unload <plugin>", RED));
+                }
+                unloadPlugin(sender, args[1]);
+                break;
+            case "load":
+            case "l":
+                if (args.length < 2) {
+                    sender.sendMessage(textWithColor("Usage: /bpm load <plugin>", RED));
+                }
+                loadPlugin(sender, args[1]);
+                break;
+            case "reload":
+            case "r":
+                if (args.length < 2) {
+                    sender.sendMessage(textWithColor("Usage: /bpm reload <plugin>", RED));
+                }
+                reloadPlugin(sender, args[1]);
+                break;
+            case "list":
+            case "ls":
+                listPlugins(sender);
+                break;
+            default:
+                sender.sendMessage(textWithColor("Command not found. Type /bpm help to see available commands.", RED));
+                break;
         }
+    }
+
+    private void unloadPlugin(CommandSender sender, String pluginName) {
+        Plugin plugin = findPlugin(pluginName);
+        if (plugin == null) {
+            sender.sendMessage(textWithColor(format("Plugin '%s' not found.", pluginName), RED));
+            return;
+        }
+        PluginUtils.unloadPlugin(plugin);
+        sender.sendMessage(textWithColor(format("Plugin '%s' unloaded.", plugin.getDescription().getName()), YELLOW));
+    }
+
+    private void loadPlugin(CommandSender sender, String pluginName) {
+        Plugin plugin = findPlugin(pluginName);
+        if (plugin != null) {
+            sender.sendMessage(textWithColor("Plugin is already loaded", RED));
+            return;
+        }
+        File file = findFile(pluginName);
+        if (!file.exists()) {
+            sender.sendMessage(textWithColor(format("Plugin '%s' not found.", pluginName), RED));
+            return;
+        }
+        boolean success = PluginUtils.loadPlugin(file);
+        if (success) {
+            sender.sendMessage(textWithColor("Plugin loaded.", YELLOW));
+        } else {
+            sender.sendMessage(textWithColor("Failed to load plugin, see console for more details.", RED));
+        }
+    }
+
+    private void reloadPlugin(CommandSender sender, String pluginName) {
+        Plugin plugin = findPlugin(pluginName);
+        if (plugin == null) {
+            sender.sendMessage(textWithColor(format("Plugin '%s' not found.", pluginName), RED));
+            return;
+        }
+        File pluginFile = plugin.getFile();
+        PluginUtils.unloadPlugin(plugin);
+        boolean success = PluginUtils.loadPlugin(pluginFile);
+        if (success) {
+            sender.sendMessage(textWithColor("Plugin reloaded.", YELLOW));
+        } else {
+            sender.sendMessage(textWithColor("Failed to reload plugin, see console for more details.", RED));
+        }
+    }
+
+    private void listPlugins(CommandSender sender) {
+        Collection<Plugin> plugins = ProxyServer.getInstance().getPluginManager().getPlugins();
+        ComponentBuilder builder = new ComponentBuilder("Plugins[" + plugins.size() + "]: ");
+        plugins.forEach(plugin -> builder.append(plugin.getDescription().getName()).color(GREEN).append(",").color(WHITE));
+        sender.sendMessage(builder.create());
     }
 
     static Plugin findPlugin(String pluginName) {
@@ -105,36 +133,35 @@ public final class BungeePluginManagerCommand extends Command {
 
         File folder = ProxyServer.getInstance().getPluginsFolder();
 
-        if (folder.exists()) {
-
-            File[] pluginFiles = folder.listFiles((File file) -> file.isFile() && file.getName().endsWith(".jar"));
-            if (pluginFiles != null) {
-                for (File file : pluginFiles) {
-
-                    try (JarFile jar = new JarFile(file)) {
-
-                        JarEntry configurationFile = jar.getJarEntry("bungee.yml");
-
-                        if (configurationFile == null) {
-                            configurationFile = jar.getJarEntry("plugin.yml");
-                        }
-
-                        try (InputStream in = jar.getInputStream(configurationFile)) {
-
-                            final PluginDescription desc = new Yaml().loadAs(in, PluginDescription.class);
-
-                            if (desc.getName().equalsIgnoreCase(pluginName)) {
-                                return file;
-                            }
-                        }
-
-                    } catch (Exception error) {
-                        // Ignored
-                    }
-                }
-            }
+        if (!folder.exists()) {
+            return new File(folder, pluginName + ".jar");
         }
 
+        File[] pluginFiles = folder.listFiles((File file) -> file.isFile() && file.getName().endsWith(".jar"));
+        if (pluginFiles == null) {
+            return new File(folder, pluginName + ".jar");
+        }
+        for (File file : pluginFiles) {
+            try (JarFile jar = new JarFile(file)) {
+
+                JarEntry configurationFile = jar.getJarEntry("bungee.yml");
+
+                if (configurationFile == null) {
+                    configurationFile = jar.getJarEntry("plugin.yml");
+                }
+
+                try (InputStream in = jar.getInputStream(configurationFile)) {
+
+                    final PluginDescription desc = new Yaml().loadAs(in, PluginDescription.class);
+
+                    if (desc.getName().equalsIgnoreCase(pluginName)) {
+                        return file;
+                    }
+                }
+            } catch (Exception error) {
+                // Ignored
+            }
+        }
         return new File(folder, pluginName + ".jar");
     }
 
