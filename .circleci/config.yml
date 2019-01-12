@@ -33,7 +33,11 @@ jobs:
           key: bpm-{{ checksum "pom.xml" }}
 
 
+      # Package and generate artifacts
       - run: mvn -T 2 -B package
+
+      # Run SonarQube
+      - run: mvn sonar:sonar $SONAR_ARGS
 
 
       - store_artifacts:
