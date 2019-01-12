@@ -17,7 +17,7 @@ public final class ModifiedPluginEventBus extends EventBus {
             UNCOMPLETED_EVENTS.forEach(event -> {
                 try {
                     event.completeIntent(plugin);
-                } catch (Throwable ignored) {
+                } catch (Exception ignored) {
                 }
             });
         }

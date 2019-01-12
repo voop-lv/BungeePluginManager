@@ -3,6 +3,7 @@ package bungeepluginmanager;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.ComponentBuilder.FormatRetention;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -23,7 +24,7 @@ import static net.md_5.bungee.api.ChatColor.*;
 public final class BungeePluginManagerCommand extends Command {
 
     BungeePluginManagerCommand() {
-        super("bungeepluginmanager", "bungeepluginmanager.cmds", "bpm");
+        super("bungeepluginmanager", "bungeepluginmanager.cmds", "bpm", "bungeepm");
     }
 
     @Override
@@ -33,95 +34,64 @@ public final class BungeePluginManagerCommand extends Command {
             sendHelp(sender);
             return;
         }
-
-        switch (args[0].toLowerCase()) {
-            case "help":
-                sendHelp(sender);
-                break;
-            case "unload": {
-
-                Plugin plugin = findPlugin(args[1]);
-
-                if (plugin == null) {
-                    sender.sendMessage(textWithColor(format("Plugin '%s' not found.", args[1]), RED));
-                    return;
-                }
-
-                PluginUtils.unloadPlugin(plugin);
-                sender.sendMessage(textWithColor(format("Plugin '%s' unloaded.", plugin.getDescription().getName()), YELLOW));
-                break;
+        final String cmd = args[0].toLowerCase();
+        if ("help".equals(cmd) || "h".equals(cmd)) {
+            sendHelp(sender);
+        } else if ("unload".equals(cmd) || "ul".equals(cmd)) {
+            if (args.length < 2) {
+                sender.sendMessage(textWithColor("Usage: /bpm unload <plugin>", RED));
             }
-
-            case "load": {
-                if (args.length < 2) {
-                    sender.sendMessage(textWithColor("Usage: /bpm load <plugin>", RED));
-                }
-
-                Plugin plugin = findPlugin(args[1]);
-
-                if (plugin != null) {
-                    sender.sendMessage(textWithColor("Plugin is already loaded", RED));
-                    return;
-                }
-
-                File file = findFile(args[1]);
-
-                if (!file.exists()) {
-                    sender.sendMessage(textWithColor(format("Plugin '%s' not found.", args[1]), RED));
-                    return;
-                }
-
-                boolean success = PluginUtils.loadPlugin(file);
-
-                if (success) {
-                    sender.sendMessage(textWithColor("Plugin loaded.", YELLOW));
-                } else {
-                    sender.sendMessage(textWithColor("Failed to load plugin, see console for more details.", RED));
-                }
-
-                break;
+            Plugin plugin = findPlugin(args[1]);
+            if (plugin == null) {
+                sender.sendMessage(textWithColor(format("Plugin '%s' not found.", args[1]), RED));
+                return;
             }
-
-            case "reload": {
-                if (args.length < 2) {
-                    sender.sendMessage(textWithColor("Usage: /bpm reload <plugin>", RED));
-                }
-
-                Plugin plugin = findPlugin(args[1]);
-
-                if (plugin == null) {
-                    sender.sendMessage(textWithColor(format("Plugin '%s' not found.", args[1]), RED));
-                    return;
-                }
-
-                File pluginFile = plugin.getFile();
-                PluginUtils.unloadPlugin(plugin);
-
-                boolean success = PluginUtils.loadPlugin(pluginFile);
-
-                if (success) {
-                    sender.sendMessage(textWithColor("Plugin reloaded.", YELLOW));
-                } else {
-                    sender.sendMessage(textWithColor("Failed to reload plugin, see console for more details.", RED));
-                }
-                break;
-
+            PluginUtils.unloadPlugin(plugin);
+            sender.sendMessage(textWithColor(format("Plugin '%s' unloaded.", plugin.getDescription().getName()), YELLOW));
+        } else if ("load".equals(cmd) || "l".equals(cmd)) {
+            if (args.length < 2) {
+                sender.sendMessage(textWithColor("Usage: /bpm load <plugin>", RED));
             }
-
-            case "list": {
-                Collection<Plugin> plugins = ProxyServer.getInstance().getPluginManager().getPlugins();
-
-                ComponentBuilder builder = new ComponentBuilder("Plugins[" + plugins.size() + "]: ");
-                plugins.forEach(plugin -> builder.append(plugin.getDescription().getName()).color(GREEN).append(",").color(WHITE));
-
-                sender.sendMessage(builder.create());
-                break;
-
+            Plugin plugin = findPlugin(args[1]);
+            if (plugin != null) {
+                sender.sendMessage(textWithColor("Plugin is already loaded", RED));
+                return;
             }
-
-            default: {
-                sender.sendMessage(textWithColor("Command not found. Type /bpm help to see available commands.", RED));
+            File file = findFile(args[1]);
+            if (!file.exists()) {
+                sender.sendMessage(textWithColor(format("Plugin '%s' not found.", args[1]), RED));
+                return;
             }
+            boolean success = PluginUtils.loadPlugin(file);
+            if (success) {
+                sender.sendMessage(textWithColor("Plugin loaded.", YELLOW));
+            } else {
+                sender.sendMessage(textWithColor("Failed to load plugin, see console for more details.", RED));
+            }
+        } else if ("reload".equals(cmd) || "r".equals(cmd)) {
+            if (args.length < 2) {
+                sender.sendMessage(textWithColor("Usage: /bpm reload <plugin>", RED));
+            }
+            Plugin plugin = findPlugin(args[1]);
+            if (plugin == null) {
+                sender.sendMessage(textWithColor(format("Plugin '%s' not found.", args[1]), RED));
+                return;
+            }
+            File pluginFile = plugin.getFile();
+            PluginUtils.unloadPlugin(plugin);
+            boolean success = PluginUtils.loadPlugin(pluginFile);
+            if (success) {
+                sender.sendMessage(textWithColor("Plugin reloaded.", YELLOW));
+            } else {
+                sender.sendMessage(textWithColor("Failed to reload plugin, see console for more details.", RED));
+            }
+        } else if ("list".equals(cmd) || "ls".equals(cmd)) {
+            Collection<Plugin> plugins = ProxyServer.getInstance().getPluginManager().getPlugins();
+            ComponentBuilder builder = new ComponentBuilder("Plugins[" + plugins.size() + "]: ");
+            plugins.forEach(plugin -> builder.append(plugin.getDescription().getName()).color(GREEN).append(",").color(WHITE));
+            sender.sendMessage(builder.create());
+        } else {
+            sender.sendMessage(textWithColor("Command not found. Type /bpm help to see available commands.", RED));
         }
     }
 
@@ -158,10 +128,9 @@ public final class BungeePluginManagerCommand extends Command {
                             }
                         }
 
-                    } catch (Throwable ignored) {
+                    } catch (Exception error) {
+                        // Ignored
                     }
-
-
                 }
             }
         }
@@ -177,8 +146,8 @@ public final class BungeePluginManagerCommand extends Command {
     static void sendHelp(CommandSender sender) {
         ComponentBuilder builder = new ComponentBuilder("\n");
         builder.append("---- BungeePluginManager ----\n").color(GOLD).bold(true);
-        builder.append("/bpm help: ").color(GOLD).bold(true).append("Display this message\n", FormatRetention.NONE);
-        builder.append("/bpm load ").color(GOLD).append("<plugin>: ").color(GREEN).append("Loads a plugin\n", FormatRetention.NONE);
+        builder.append("/bpm help: ").event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "bpm help")).color(GOLD).bold(true).append("Display this message\n", FormatRetention.NONE);
+        builder.append("/bpm load ").event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "bpm load ")).color(GOLD).append("<plugin>: ").color(GREEN).append("Loads a plugin\n", FormatRetention.NONE);
         builder.append("/bpm unload ").color(GOLD).append("<plugin>: ").color(GREEN).append("Unloads a plugin\n", FormatRetention.NONE);
         builder.append("/bpm reload ").color(GOLD).append("<plugin>: ").color(GREEN).append("Reloads a plugin\n", FormatRetention.NONE);
         builder.append("/bpm list: ").color(GOLD).append("List all plugins on the bungee", FormatRetention.NONE);

@@ -22,6 +22,9 @@ import net.md_5.bungee.api.plugin.PluginManager;
 import org.yaml.snakeyaml.Yaml;
 
 public final class PluginUtils {
+    private PluginUtils() {
+        throw new IllegalStateException("Utility class");
+    }
 
     @SuppressWarnings("deprecation")
     public static void unloadPlugin(Plugin plugin) {
@@ -36,7 +39,7 @@ public final class PluginUtils {
             for (Handler handler : plugin.getLogger().getHandlers()) {
                 handler.close();
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             severe("Exception disabling plugin", t, plugin.getDescription().getName());
         }
 
@@ -58,7 +61,7 @@ public final class PluginUtils {
                         if (thread.isAlive()) {
                             thread.stop();
                         }
-                    } catch (Throwable t) {
+                    } catch (Exception t) {
                         severe("Failed to stop thread that belong to plugin", t, plugin.getDescription().getName());
                     }
                 });
@@ -69,7 +72,7 @@ public final class PluginUtils {
         try {
             Map<String, Command> commandMap = ReflectionUtils.getFieldValue(pluginManager, "commandMap");
             commandMap.entrySet().removeIf(entry -> entry.getValue().getClass().getClassLoader() == pluginClassLoader);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             severe("Failed to cleanup commandMap", t, plugin.getDescription().getName());
         }
         //cleanup internal listener and command maps from plugin refs
@@ -80,14 +83,14 @@ public final class PluginUtils {
             commands.removeAll(plugin);
             Multimap<Plugin, Listener> listeners = ReflectionUtils.getFieldValue(pluginManager, "listenersByPlugin");
             listeners.removeAll(plugin);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             severe("Failed to cleanup bungee internal maps from plugin refs", t, plugin.getDescription().getName());
         }
         //close classloader
         if (pluginClassLoader instanceof URLClassLoader) {
             try {
                 ((URLClassLoader) pluginClassLoader).close();
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 severe("Failed to close the classloader for plugin", t, plugin.getDescription().getName());
             }
         }
@@ -123,10 +126,12 @@ public final class PluginUtils {
                 }
 
                 // do actual loading
-                URLClassLoader loader = new PluginClassloader( new URL[] {
+                Class<?> main;
+                try (URLClassLoader loader = new PluginClassloader(new URL[]{
                         pluginFile.toURI().toURL()
-                });
-                Class<?> main = loader.loadClass(desc.getMain());
+                })) {
+                    main = loader.loadClass(desc.getMain());
+                }
                 Plugin clazz = (Plugin) main.getDeclaredConstructor().newInstance();
 
                 // reflection
@@ -138,14 +143,14 @@ public final class PluginUtils {
                 clazz.onEnable();
                 return true;
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             severe("Failed to load plugin", t, pluginFile.getName());
             return false;
         }
 
     }
 
-    private static void severe(String message, Throwable t, String pluginName) {
+    private static void severe(String message, Exception t, String pluginName) {
         ProxyServer.getInstance().getLogger().log(Level.SEVERE, message + " " + pluginName, t);
     }
 

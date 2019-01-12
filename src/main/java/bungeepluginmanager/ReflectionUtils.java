@@ -5,6 +5,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 final class ReflectionUtils {
+    private ReflectionUtils() {
+        throw new IllegalStateException("Utility class");
+    }
 
     @SuppressWarnings("unchecked")
     static <T> T getFieldValue(Object obj, String fieldName) {
@@ -14,7 +17,8 @@ final class ReflectionUtils {
                 Field field = clazz.getDeclaredField(fieldName);
                 field.setAccessible(true);
                 return (T) field.get(obj);
-            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ignored) {
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException error) {
+                // Ignored
             }
         } while ((clazz = clazz.getSuperclass()) != null);
         return null;
@@ -27,7 +31,8 @@ final class ReflectionUtils {
                 Field field = clazz.getDeclaredField(fieldName);
                 field.setAccessible(true);
                 field.set(obj, value);
-            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ignored) {
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException error) {
+                // Ignored
             }
         } while ((clazz = clazz.getSuperclass()) != null);
     }
@@ -39,7 +44,8 @@ final class ReflectionUtils {
                 Field field = clazz.getDeclaredField(fieldName);
                 field.setAccessible(true);
                 return (T) field.get(null);
-            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ignored) {
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException error) {
+                // Ignored
             }
         } while ((clazz = clazz.getSuperclass()) != null);
         return null;
@@ -55,7 +61,8 @@ final class ReflectionUtils {
                         method.invoke(obj, args);
                     }
                 }
-            } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ignored) {
+            } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
+                // Ignore
             }
         } while ((clazz = clazz.getSuperclass()) != null);
     }
