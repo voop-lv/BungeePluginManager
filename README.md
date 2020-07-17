@@ -8,4 +8,5 @@ Plugin that makes it possible to load, unload and reload BungeeCord plugins whil
 | ------- | ------------------ |
 | BungeeCord     | :white_check_mark: |
 | Waterfall     | :white_check_mark: |
+|Travertine| Not Yet Tested
 
