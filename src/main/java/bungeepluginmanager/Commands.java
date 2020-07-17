@@ -8,15 +8,13 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.plugin.TabExecutor;
 import org.yaml.snakeyaml.Yaml;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
@@ -110,7 +108,8 @@ public class Commands extends Command implements TabExecutor {
 			sendHelp(sender);
 			return;
 		} else if (args[0].equalsIgnoreCase("list")) {
-			sender.sendMessage(textWithColor(ProxyServer.getInstance().getPluginManager().getPlugins().stream().map(plugin -> plugin.getDescription().getName()).collect(Collectors.joining(", ")), ChatColor.GREEN));
+			sender.sendMessage(new TextComponent(GRAY+"Total plugins loaded on bungeecord: " + YELLOW+ProxyServer.getInstance().getPluginManager().getPlugins().size()));
+			sender.sendMessage(textWithColor(ProxyServer.getInstance().getPluginManager().getPlugins().stream().map(plugin -> plugin.getDescription().getName()).collect(Collectors.joining(WHITE+", "+GREEN)), ChatColor.GREEN));
 			return;
 		} else if (args[0].equalsIgnoreCase("reload")) {
 			if (args.length == 1) {
@@ -122,7 +121,7 @@ public class Commands extends Command implements TabExecutor {
 			} else {
 				Plugin plugin = findPlugin(args[1]);
 				if (plugin == null) {
-					sender.sendMessage(textWithColor("Plugin not found", ChatColor.RED));
+					sender.sendMessage(textWithColor(GRAY + ITALIC.toString() + args[1] + " not found", ChatColor.RED));
 					return;
 				}
 				File pluginfile = plugin.getFile();
@@ -134,7 +133,7 @@ public class Commands extends Command implements TabExecutor {
 				}
 				try {
 					PluginUtils.loadPlugin(pluginfile);
-					sender.sendMessage(textWithColor("Plugin reloaded", ChatColor.YELLOW));
+					sender.sendMessage(textWithColor(GRAY + ITALIC.toString() + args[1] + " reloaded", ChatColor.YELLOW));
 				} catch (Throwable t) {
 					sender.sendMessage(textWithColor("Error occured while loading plugin, see console for more details", ChatColor.RED));
 					t.printStackTrace();
@@ -151,18 +150,18 @@ public class Commands extends Command implements TabExecutor {
 			} else {
 				Plugin plugin = findPlugin(args[1]);
 				if (plugin != null) {
-					sender.sendMessage(textWithColor("Plugin is already loaded", ChatColor.RED));
+					sender.sendMessage(textWithColor(GRAY + ITALIC.toString() + args[1] +  " is already loaded", ChatColor.RED));
 					return;
 				}
 				File file = findFile(args[1]);
 				if (!file.exists()) {
-					sender.sendMessage(textWithColor("Plugin not found", ChatColor.RED));
+					sender.sendMessage(textWithColor(GRAY + ITALIC.toString() + args[1] + " not found", ChatColor.RED));
 					return;
 				}
 
 				try {
 					PluginUtils.loadPlugin(file);
-					sender.sendMessage(textWithColor("Plugin loaded", ChatColor.YELLOW));
+					sender.sendMessage(textWithColor(GRAY + ITALIC.toString() + args[1] + " loaded", ChatColor.YELLOW));
 				} catch (Throwable t) {
 					sender.sendMessage(textWithColor("Error occured while loading plugin, see console for more details", ChatColor.RED));
 					t.printStackTrace();
@@ -179,7 +178,7 @@ public class Commands extends Command implements TabExecutor {
 			} else {
 				Plugin plugin = findPlugin(args[1]);
 				if (plugin == null) {
-					sender.sendMessage(textWithColor("Plugin not found", ChatColor.RED));
+					sender.sendMessage(textWithColor(GRAY + ITALIC.toString() + args[1] + " not found", ChatColor.RED));
 					return;
 				}
 				Exception unloadError = PluginUtils.unloadPlugin(plugin);
@@ -239,11 +238,11 @@ public class Commands extends Command implements TabExecutor {
 	private static void sendHelp(CommandSender sender) {
 		ComponentBuilder builder = new ComponentBuilder("");
 		builder.append("---- BungeePluginManager ----\n").color(GOLD).bold(true);
-		builder.append("/bpm help: ").event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bpm help")).color(GOLD).bold(false).append("Display this message\n", ComponentBuilder.FormatRetention.NONE);
+		//builder.append("/bpm help: ").event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bpm help")).color(GOLD).bold(false).append("Display this message\n", ComponentBuilder.FormatRetention.NONE);
 		builder.append("/bpm load ").event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bpm load ")).color(GOLD).append("<plugin>: ").color(GREEN).append("Loads a plugin\n", ComponentBuilder.FormatRetention.NONE);
 		builder.append("/bpm unload ").event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bpm unload ")).color(GOLD).append("<plugin>: ").color(GREEN).append("Unloads a plugin\n", ComponentBuilder.FormatRetention.NONE);
 		builder.append("/bpm reload ").event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bpm reload ")).color(GOLD).append("<plugin>: ").color(GREEN).append("Reloads a plugin\n", ComponentBuilder.FormatRetention.NONE);
-		builder.append("/bpm list: ").event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bpm list")).color(GOLD).append("List all plugins on the bungee", ComponentBuilder.FormatRetention.NONE);
+		builder.append("/bpm list: ").event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bpm list")).event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder( "Click Here To Run This Command!" ).create())).color(GOLD).append("List all plugins on the bungee", ComponentBuilder.FormatRetention.NONE);
 		sender.sendMessage(builder.create());
 	}
 }
