@@ -32,20 +32,10 @@ public class Commands extends Command implements TabExecutor {
 			List<String> result = new ArrayList<String>();
 			if (args.length == 1) {
 				if (args[0].equalsIgnoreCase("")) {
-					result.add("help");
 					result.add("list");
 					result.add("load");
 					result.add("reload");
 					result.add("unload");
-					return result;
-				}
-				if (args[0].startsWith("l")) {
-					result.add("list");
-					result.add("load");
-					return result;
-				}
-				if ((args[0].startsWith("h")) || (args[0].endsWith("help"))) {
-					result.add("help");
 					return result;
 				}
 				if ((args[0].startsWith("li")) || (args[0].endsWith("list"))) {
@@ -53,6 +43,11 @@ public class Commands extends Command implements TabExecutor {
 					return result;
 				}
 				if ((args[0].startsWith("lo")) || (args[0].endsWith("load"))) {
+					result.add("load");
+					return result;
+				}
+				if (args[0].startsWith("l")) {
+					result.add("list");
 					result.add("load");
 					return result;
 				}
@@ -66,7 +61,7 @@ public class Commands extends Command implements TabExecutor {
 				}
 			}
 			if (args.length == 2) {
-				if ((args[0].equalsIgnoreCase("help")) || (args[0].equalsIgnoreCase("list"))) {
+				if (args[0].equalsIgnoreCase("list")) {
 					return BungeePluginManager.TabshowNone();
 				}
 				if ((args[0].equalsIgnoreCase("reload")) || (args[0].equalsIgnoreCase("unload"))) {
@@ -189,9 +184,6 @@ public class Commands extends Command implements TabExecutor {
 				}
 				return;
 			}
-		} else if (args[0].equalsIgnoreCase("help")) {
-			sendHelp(sender);
-			return;
 		} else {
 			sender.sendMessage(new TextComponent(RED + "Error: " + DARK_RED + "Sub-Command Not Found!"));
 			return;
@@ -239,10 +231,10 @@ public class Commands extends Command implements TabExecutor {
 		ComponentBuilder builder = new ComponentBuilder("");
 		builder.append("---- BungeePluginManager ----\n").color(GOLD).bold(true);
 		//builder.append("/bpm help: ").event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bpm help")).color(GOLD).bold(false).append("Display this message\n", ComponentBuilder.FormatRetention.NONE);
-		builder.append("/bpm load ").event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bpm load ")).color(GOLD).append("<plugin>: ").color(GREEN).append("Loads a plugin\n", ComponentBuilder.FormatRetention.NONE);
+		builder.append("/bpm load ").event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bpm load ")).color(GOLD).bold(false).append("<plugin>: ").color(GREEN).append("Loads a plugin\n", ComponentBuilder.FormatRetention.NONE);
 		builder.append("/bpm unload ").event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bpm unload ")).color(GOLD).append("<plugin>: ").color(GREEN).append("Unloads a plugin\n", ComponentBuilder.FormatRetention.NONE);
 		builder.append("/bpm reload ").event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bpm reload ")).color(GOLD).append("<plugin>: ").color(GREEN).append("Reloads a plugin\n", ComponentBuilder.FormatRetention.NONE);
-		builder.append("/bpm list: ").event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bpm list")).event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder( "Click Here To Run This Command!" ).create())).color(GOLD).append("List all plugins on the bungee", ComponentBuilder.FormatRetention.NONE);
+		builder.append("/bpm list: ").event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bpm list")).event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder( "Click Here To Run This Command!" ).color(BLUE).italic(true).create())).color(GOLD).append("List all plugins on the bungee", ComponentBuilder.FormatRetention.NONE);
 		sender.sendMessage(builder.create());
 	}
 }
