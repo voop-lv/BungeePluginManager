@@ -3,6 +3,8 @@ package bungeepluginmanager;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -30,35 +32,13 @@ public class Commands extends Command implements TabExecutor {
 	public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
 		if (sender.hasPermission("bungeepluginmanager.cmds")) {
 			List<String> result = new ArrayList<String>();
+
 			if (args.length == 1) {
-				if (args[0].equalsIgnoreCase("")) {
-					result.add("list");
-					result.add("load");
-					result.add("reload");
-					result.add("unload");
-					return result;
-				}
-				if ((args[0].startsWith("li")) || (args[0].endsWith("list"))) {
-					result.add("list");
-					return result;
-				}
-				if ((args[0].startsWith("lo")) || (args[0].endsWith("load"))) {
-					result.add("load");
-					return result;
-				}
-				if (args[0].startsWith("l")) {
-					result.add("list");
-					result.add("load");
-					return result;
-				}
-				if ((args[0].startsWith("r")) || (args[0].endsWith("reload"))) {
-					result.add("reload");
-					return result;
-				}
-				if ((args[0].startsWith("u")) || (args[0].endsWith("unload"))) {
-					result.add("unload");
-					return result;
-				}
+				result.add("list");
+				result.add("load");
+				result.add("reload");
+				result.add("unload");
+				return result.stream().filter(a -> a.startsWith(args[0])).collect(Collectors.toList());
 			}
 			if (args.length == 2) {
 				if (args[0].equalsIgnoreCase("list")) {
@@ -66,11 +46,14 @@ public class Commands extends Command implements TabExecutor {
 				}
 				if ((args[0].equalsIgnoreCase("reload")) || (args[0].equalsIgnoreCase("unload"))) {
 					List<String> plugin = new ArrayList<String>();
+
 					for (Plugin pluginlist : ProxyServer.getInstance().getPluginManager().getPlugins()) {
 						String pluglist = pluginlist.getDescription().getName();
 						plugin.add(pluglist);
 					}
-					return plugin;
+					Collections.sort(plugin);
+					return plugin.stream().filter(a -> a.startsWith(args[1])).collect(Collectors.toList());
+
 				}
 				if (args[0].equalsIgnoreCase("load")) {
 					List<String> jarfile = new ArrayList<String>();
@@ -86,7 +69,7 @@ public class Commands extends Command implements TabExecutor {
 							}
 						}
 					}
-					return jarfile;
+					return jarfile.stream().filter(a -> a.startsWith(args[1])).collect(Collectors.toList());
 				}
 			}
 			if (args.length >= 3) {
